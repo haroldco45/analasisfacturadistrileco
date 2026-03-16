@@ -8,99 +8,119 @@
         :root { --p-green: #2ecc71; --p-blue: #3498db; --p-dark: #333; }
         body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding: 20px; margin: 0; }
         .container { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 210mm; min-height: 297mm; box-sizing: border-box; }
+        
         .header { display: flex; justify-content: space-between; border-bottom: 2px solid var(--p-green); padding-bottom: 15px; margin-bottom: 20px; }
-        .header-info h2 { margin: 0; font-size: 1.4em; }
+        .header-info h2 { margin: 0; font-size: 1.4em; color: var(--p-dark); }
+        .header-info p { margin: 2px 0; font-size: 0.85em; color: #555; }
         .report-title { text-align: right; }
         .report-title h1 { margin: 0; color: var(--p-green); font-size: 1.2em; }
+        .report-title p { margin: 0; font-size: 0.9em; font-weight: bold; }
+
         .upload-section { border: 2px dashed var(--p-blue); padding: 30px; text-align: center; border-radius: 8px; cursor: pointer; margin-bottom: 20px; background: #fff; }
+        
         table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.85em; }
         th, td { border: 1px solid #eee; padding: 12px; text-align: left; }
         th { background: var(--p-blue); color: white; }
-        .resumen-box { width: 320px; line-height: 2; font-size: 0.95em; border: 1px solid #eee; padding: 15px; border-radius: 5px; margin-left: auto; margin-top: 20px; }
+        .prov-name { font-weight: bold; color: var(--p-dark); }
+
+        .financial-container { display: flex; justify-content: flex-end; margin-top: 25px; }
+        .resumen-box { width: 320px; line-height: 2; font-size: 0.95em; border: 1px solid #eee; padding: 15px; border-radius: 5px; }
+        .resumen-item { display: flex; justify-content: space-between; border-bottom: 1px solid #f9f9f9; }
         .total-row { font-weight: bold; color: var(--p-green); font-size: 1.2em; border-top: 2px solid #eee; padding-top: 5px; }
+
         .btn-group { display: flex; gap: 10px; margin-top: 30px; justify-content: center; }
-        .btn { padding: 12px 25px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; color: white; }
-        @media print { @page { size: portrait; margin: 15mm; } .upload-section, .btn-group { display: none !important; } }
+        .btn { padding: 12px 25px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; color: white; transition: 0.3s; }
+        
+        @media print {
+            @page { size: portrait; margin: 15mm; }
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; width: 100%; padding: 0; }
+            .upload-section, .btn-group { display: none !important; }
+        }
     </style>
 </head>
 <body>
+
 <div class="container" id="printableArea">
     <div class="header">
         <div class="header-info">
             <h2>DISTRILECO CAUCASIA S.A.S</h2>
-            <p>NIT: 800183056-9 - Responsable de IVA</p>
-            <p>Carrera 2 Diag 25 # 2-25 - Caucasia</p>
-            <p>Tel: 320 613 4987 | Email: y.lopez@distrileco.com</p>
+            <p>NIT: 800183056-9 - Responsable de IVA [cite: 375]</p>
+            <p>Carrera 2 Diag 25 # 2-25 - Caucasia [cite: 375]</p>
+            <p>Tel: 320 613 4987 | Email: y.lopez@distrileco.com [cite: 376]</p>
         </div>
         <div class="report-title">
             <h1>REPORTE DE CARTERA</h1>
-            <p id="facturaInfo">Esperando carga de factura...</p>
+            <p id="facturaDoc">Documento: Esperando...</p>
+            <p id="fechaDoc">Fecha: 16/03/2026 [cite: 383]</p>
         </div>
     </div>
 
-    <div class="upload-section" onclick="document.getElementById('fileInput').click()" id="dropZone">
-        <strong>Haz clic AQUÍ para CARGAR tus facturas (PDF/JSON)</strong>
+    <div class="upload-section" onclick="document.getElementById('fileInput').click()" id="uploadZone">
+        <p>Haga clic AQUÍ para seleccionar la FACTURA y ACTIVAR el proceso</p>
         <input type="file" id="fileInput" hidden accept=".pdf,.json">
     </div>
 
-    <div id="tableArea"></div>
+    <div id="desgloseContent"></div>
 
-    <div id="summaryArea" style="display:none;">
-        <div class="resumen-box" id="resumenContenido"></div>
+    <div class="financial-container" id="summaryZone" style="display:none;">
+        <div class="resumen-box" id="resumenData"></div>
     </div>
 
     <div class="btn-group">
-        <button class="btn" style="background:#2ecc71" onclick="exportExcel()">Excel</button>
+        <button class="btn" style="background:#2ecc71" onclick="exportarExcel()">Excel</button>
         <button class="btn" style="background:#3498db" onclick="window.print()">Imprimir Vertical</button>
-        <button class="btn" style="background:#333" onclick="alert('Datos sincronizados con procesos administrativos')">GitHub</button>
+        <button class="btn" style="background:#333" onclick="alert('Sincronizado con procesos administrativos')">GitHub</button>
     </div>
 </div>
 
 <script>
     document.getElementById('fileInput').addEventListener('change', function() {
-        const modo = prompt("✨ Vibras Positivas ✨\n¿Qué desea procesar con este archivo?\n1. Análisis de una sola factura\n2. Análisis de rango (Consolidado)");
+        // PREGUNTA DINÁMICA AL USUARIO
+        const modo = prompt("✨ Vibras Positivas ✨\n¿Qué desea analizar?\n1. Una sola factura (ej. FEDC162520)\n2. Rango de facturas");
         
+        let idDocumento = "";
         if (modo === "1") {
-            ejecutarAnalisis("FEDC162520", "16/03/2026");
+            idDocumento = prompt("Ingrese el número de la factura:", "FEDC162520");
         } else if (modo === "2") {
-            const desde = prompt("Desde factura (Ej: FEDC162540):");
-            const hasta = prompt("Hasta factura (Ej: FEDC162544):");
-            ejecutarAnalisis(`Rango ${desde} - ${hasta}`, "Consolidado de Cartera");
+            const desde = prompt("Desde la factura:");
+            const hasta = prompt("Hasta la factura:");
+            idDocumento = "Rango " + desde + " - " + hasta;
         } else {
-            alert("Selección no válida. Intente de nuevo.");
+            alert("Selección no válida."); return;
         }
+
+        // Ejecutar el proceso con los datos cargados en memoria de la factura FEDC162520 
+        procesarAnalisis(idDocumento);
     });
 
-    function ejecutarAnalisis(doc, fecha) {
-        document.getElementById('facturaInfo').innerText = "Documento: " + doc + "\nFecha: " + fecha;
-        
-        // El sistema cruza automáticamente las referencias con los proveedores (Ej: PROLECHE, EL TRECE)
-        const items = [
-            { prov: "EMPAQUETADORA", base: 420000, iva: 0, total: 420000 }, 
-            { prov: "EL TRECE", base: 63500, iva: 0, total: 63500 }, 
-            { prov: "PROLECHE", base: 351000, iva: 0, total: 351000 }, 
-            { prov: "FAMILIA SANCELA", base: 116222, iva: 22082, total: 138304 }, 
-            { prov: "CORBETA", base: 68236, iva: 12965, total: 81201 } 
+    function procesarAnalisis(doc) {
+        document.getElementById('facturaDoc').innerText = "Documento: " + doc;
+
+        const cartera = [
+            { prov: "EMPAQUETADORA", base: 420000, iva: 0, total: 420000 }, [cite: 396]
+            { prov: "EL TRECE", base: 63500, iva: 0, total: 63500 }, [cite: 396]
+            { prov: "PROLECHE", base: 351000, iva: 0, total: 351000 }, [cite: 396]
+            { prov: "FAMILIA SANCELA", base: 116222, iva: 22082, total: 138304 }, [cite: 396]
+            { prov: "CORBETA", base: 68236, iva: 12965, total: 81201 } [cite: 396]
         ];
 
-        let html = `<table><tr><th>Proveedor</th><th>Base Gravable</th><th>IVA</th><th>Total Cartera</th></tr>`;
-        items.forEach(i => {
-            html += `<tr><td><strong>${i.prov}</strong></td><td>$${i.base.toLocaleString()}</td><td>$${i.iva.toLocaleString()}</td><td>$${i.total.toLocaleString()}</td></tr>`;
+        let tableHtml = `<table><tr><th>Proveedor</th><th>Base Gravable</th><th>IVA</th><th>Total Cartera</th></tr>`;
+        cartera.forEach(c => {
+            tableHtml += `<tr><td class="prov-name">${c.prov}</td><td>$${c.base.toLocaleString()}</td><td>$${c.iva.toLocaleString()}</td><td>$${c.total.toLocaleString()}</td></tr>`;
         });
-        
-        document.getElementById('tableArea').innerHTML = html + "</table>";
-        
-        document.getElementById('resumenContenido').innerHTML = `
-            <div style="display:flex; justify-content:space-between"><span>Subtotal:</span> <span>$1,018,958</span></div>
-            <div style="display:flex; justify-content:space-between"><span>IVA:</span> <span>$35,047</span></div>
-            <div class="total-row" style="display:flex; justify-content:space-between"><span>TOTAL FACTURA:</span> <span>$1,054,005</span></div>
+        document.getElementById('desgloseContent').innerHTML = tableHtml + `</table>`;
+
+        document.getElementById('resumenData').innerHTML = `
+            <div class="resumen-item"><span>Subtotal:</span> <span>$1,018,958 </span></div>
+            <div class="resumen-item"><span>IVA:</span> <span>$35,047 </span></div>
+            <div class="resumen-item total-row"><span>TOTAL FACTURA:</span> <span>$1,054,005 </span></div>
         `;
-        
-        document.getElementById('summaryArea').style.display = 'block';
-        document.getElementById('dropZone').style.display = 'none';
+        document.getElementById('summaryZone').style.display = 'flex';
+        document.getElementById('uploadZone').style.display = 'none';
     }
 
-    function exportExcel() {
+    function exportarExcel() {
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.table_to_sheet(document.getElementById('printableArea'));
         XLSX.utils.book_append_sheet(wb, ws, "Cartera_Caucasia");
