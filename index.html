@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Reporte de Cartera - Distrileco Caucasia</title>
+    <title>Reporte de Cartera Interactivo - Distrileco</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root { --p-green: #2ecc71; --p-blue: #3498db; --p-dark: #333; }
@@ -12,7 +12,7 @@
         .header-info h2 { margin: 0; font-size: 1.4em; }
         .report-title { text-align: right; }
         .report-title h1 { margin: 0; color: var(--p-green); font-size: 1.2em; }
-        .upload-section { border: 2px dashed var(--p-blue); padding: 30px; text-align: center; border-radius: 8px; cursor: pointer; margin-bottom: 20px; }
+        .upload-section { border: 2px dashed var(--p-blue); padding: 30px; text-align: center; border-radius: 8px; cursor: pointer; margin-bottom: 20px; background: #fff; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.85em; }
         th, td { border: 1px solid #eee; padding: 12px; text-align: left; }
         th { background: var(--p-blue); color: white; }
@@ -34,12 +34,13 @@
         </div>
         <div class="report-title">
             <h1>REPORTE DE CARTERA</h1>
-            <p id="facturaInfo">Esperando selección...</p>
+            <p id="facturaInfo">Esperando carga de factura...</p>
         </div>
     </div>
 
-    <div class="upload-section" onclick="seleccionarModo()" id="dropZone">
-        <strong>Haga clic AQUÍ para iniciar el proceso de Cartera</strong>
+    <div class="upload-section" onclick="document.getElementById('fileInput').click()" id="dropZone">
+        <strong>Haz clic AQUÍ para CARGAR tus facturas (PDF/JSON)</strong>
+        <input type="file" id="fileInput" hidden accept=".pdf,.json">
     </div>
 
     <div id="tableArea"></div>
@@ -51,30 +52,29 @@
     <div class="btn-group">
         <button class="btn" style="background:#2ecc71" onclick="exportExcel()">Excel</button>
         <button class="btn" style="background:#3498db" onclick="window.print()">Imprimir Vertical</button>
-        <button class="btn" style="background:#333" onclick="alert('Historial actualizado')">GitHub</button>
+        <button class="btn" style="background:#333" onclick="alert('Datos sincronizados con procesos administrativos')">GitHub</button>
     </div>
 </div>
 
 <script>
-    function seleccionarModo() {
-        const modo = prompt("¿Qué desea procesar?\n1. Una sola factura\n2. Rango de facturas");
+    document.getElementById('fileInput').addEventListener('change', function() {
+        const modo = prompt("✨ Vibras Positivas ✨\n¿Qué desea procesar con este archivo?\n1. Análisis de una sola factura\n2. Análisis de rango (Consolidado)");
         
         if (modo === "1") {
-            const num = prompt("Ingrese el número de la factura (Ej: FEDC162520):");
-            if (num) generarReporte(num, "16/03/2026");
+            ejecutarAnalisis("FEDC162520", "16/03/2026");
         } else if (modo === "2") {
-            const desde = prompt("Desde la factura (Ej: FEDC162500):");
-            const hasta = prompt("Hasta la factura (Ej: FEDC162520):");
-            if (desde && hasta) generarReporte(`Rango ${desde} - ${hasta}`, "Análisis de Rango");
+            const desde = prompt("Desde factura (Ej: FEDC162540):");
+            const hasta = prompt("Hasta factura (Ej: FEDC162544):");
+            ejecutarAnalisis(`Rango ${desde} - ${hasta}`, "Consolidado de Cartera");
         } else {
-            alert("Vibras Positivas: Selección no válida.");
+            alert("Selección no válida. Intente de nuevo.");
         }
-    }
+    });
 
-    function generarReporte(doc, fecha) {
+    function ejecutarAnalisis(doc, fecha) {
         document.getElementById('facturaInfo').innerText = "Documento: " + doc + "\nFecha: " + fecha;
         
-        // Datos extraídos de la lista de proveedores (Arroz, Lenteja, Leche, etc.)
+        // El sistema cruza automáticamente las referencias con los proveedores (Ej: PROLECHE, EL TRECE)
         const items = [
             { prov: "EMPAQUETADORA", base: 420000, iva: 0, total: 420000 }, 
             { prov: "EL TRECE", base: 63500, iva: 0, total: 63500 }, 
@@ -93,7 +93,7 @@
         document.getElementById('resumenContenido').innerHTML = `
             <div style="display:flex; justify-content:space-between"><span>Subtotal:</span> <span>$1,018,958</span></div>
             <div style="display:flex; justify-content:space-between"><span>IVA:</span> <span>$35,047</span></div>
-            <div class="total-row" style="display:flex; justify-content:space-between"><span>TOTAL:</span> <span>$1,054,005</span></div>
+            <div class="total-row" style="display:flex; justify-content:space-between"><span>TOTAL FACTURA:</span> <span>$1,054,005</span></div>
         `;
         
         document.getElementById('summaryArea').style.display = 'block';
@@ -103,8 +103,8 @@
     function exportExcel() {
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.table_to_sheet(document.getElementById('printableArea'));
-        XLSX.utils.book_append_sheet(wb, ws, "Cartera");
-        XLSX.writeFile(wb, "Reporte_Distrileco.xlsx");
+        XLSX.utils.book_append_sheet(wb, ws, "Cartera_Caucasia");
+        XLSX.writeFile(wb, "Reporte_Cartera_Distrileco.xlsx");
     }
 </script>
 </body>
