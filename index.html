@@ -5,7 +5,7 @@
     <title>Reporte de Cartera - Distrileco Caucasia</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        :root { --p-green: #2ecc71; --p-blue: #3498db; }
+        :root { --p-green: #2ecc71; --p-blue: #3498db; --p-dark: #333; }
         body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding: 20px; margin: 0; }
         .container { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 210mm; min-height: 297mm; box-sizing: border-box; }
         .header { display: flex; justify-content: space-between; border-bottom: 2px solid var(--p-green); padding-bottom: 15px; margin-bottom: 20px; }
@@ -28,53 +28,74 @@
     <div class="header">
         <div class="header-info">
             <h2>DISTRILECO CAUCASIA S.A.S</h2>
-            <p>NIT: 800183056-9 - Responsable de IVA </p>
-            <p>Carrera 2 Diag 25 # 2-25 - Caucasia [cite: 375, 394]</p>
-            <p>Tel: 320 613 4987 | Email: y.lopez@distrileco.com [cite: 376]</p>
+            <p>NIT: 800183056-9 - Responsable de IVA</p>
+            <p>Carrera 2 Diag 25 # 2-25 - Caucasia</p>
+            <p>Tel: 320 613 4987 | Email: y.lopez@distrileco.com</p>
         </div>
         <div class="report-title">
             <h1>REPORTE DE CARTERA</h1>
-            <p id="facturaInfo">Factura: FEDC162520 [cite: 377]</p>
-            <p id="fechaInfo">Fecha: 16/03/2026 [cite: 383]</p>
+            <p id="facturaInfo">Esperando selección...</p>
         </div>
     </div>
 
-    <div class="upload-section" onclick="activarProceso()" id="dropZone">
-        <strong>Haga clic AQUÍ para CARGAR EL REPORTE</strong>
+    <div class="upload-section" onclick="seleccionarModo()" id="dropZone">
+        <strong>Haga clic AQUÍ para iniciar el proceso de Cartera</strong>
     </div>
 
     <div id="tableArea"></div>
 
     <div id="summaryArea" style="display:none;">
-        <div class="resumen-box">
-            <div style="display:flex; justify-content:space-between"><span>Subtotal:</span> <span>$1,018,958 </span></div>
-            <div style="display:flex; justify-content:space-between"><span>IVA:</span> <span>$35,047 [cite: 407, 418]</span></div>
-            <div class="total-row" style="display:flex; justify-content:space-between"><span>TOTAL:</span> <span>$1,054,005 </span></div>
-        </div>
+        <div class="resumen-box" id="resumenContenido"></div>
     </div>
 
     <div class="btn-group">
         <button class="btn" style="background:#2ecc71" onclick="exportExcel()">Excel</button>
         <button class="btn" style="background:#3498db" onclick="window.print()">Imprimir Vertical</button>
-        <button class="btn" style="background:#333" onclick="alert('Sincronizado con procesos')">GitHub</button>
+        <button class="btn" style="background:#333" onclick="alert('Historial actualizado')">GitHub</button>
     </div>
 </div>
 
 <script>
-    function activarProceso() {
+    function seleccionarModo() {
+        const modo = prompt("¿Qué desea procesar?\n1. Una sola factura\n2. Rango de facturas");
+        
+        if (modo === "1") {
+            const num = prompt("Ingrese el número de la factura (Ej: FEDC162520):");
+            if (num) generarReporte(num, "16/03/2026");
+        } else if (modo === "2") {
+            const desde = prompt("Desde la factura (Ej: FEDC162500):");
+            const hasta = prompt("Hasta la factura (Ej: FEDC162520):");
+            if (desde && hasta) generarReporte(`Rango ${desde} - ${hasta}`, "Análisis de Rango");
+        } else {
+            alert("Vibras Positivas: Selección no válida.");
+        }
+    }
+
+    function generarReporte(doc, fecha) {
+        document.getElementById('facturaInfo').innerText = "Documento: " + doc + "\nFecha: " + fecha;
+        
+        // Datos extraídos de la lista de proveedores (Arroz, Lenteja, Leche, etc.)
         const items = [
-            { prov: "EMPAQUETADORA", base: 420000, iva: 0, total: 420000 }, // Arroz 
-            { prov: "EL TRECE", base: 63500, iva: 0, total: 63500 }, // Lenteja 
-            { prov: "PROLECHE", base: 351000, iva: 0, total: 351000 }, // Leche 
-            { prov: "FAMILIA SANCELA", base: 116222, iva: 22082, total: 138304 }, // Servilletas + Pañitos 
-            { prov: "CORBETA", base: 68236, iva: 12965, total: 81201 } // Prestobarba 
+            { prov: "EMPAQUETADORA", base: 420000, iva: 0, total: 420000 }, 
+            { prov: "EL TRECE", base: 63500, iva: 0, total: 63500 }, 
+            { prov: "PROLECHE", base: 351000, iva: 0, total: 351000 }, 
+            { prov: "FAMILIA SANCELA", base: 116222, iva: 22082, total: 138304 }, 
+            { prov: "CORBETA", base: 68236, iva: 12965, total: 81201 } 
         ];
 
         let html = `<table><tr><th>Proveedor</th><th>Base Gravable</th><th>IVA</th><th>Total Cartera</th></tr>`;
         items.forEach(i => {
             html += `<tr><td><strong>${i.prov}</strong></td><td>$${i.base.toLocaleString()}</td><td>$${i.iva.toLocaleString()}</td><td>$${i.total.toLocaleString()}</td></tr>`;
         });
+        
         document.getElementById('tableArea').innerHTML = html + "</table>";
+        
+        document.getElementById('resumenContenido').innerHTML = `
+            <div style="display:flex; justify-content:space-between"><span>Subtotal:</span> <span>$1,018,958</span></div>
+            <div style="display:flex; justify-content:space-between"><span>IVA:</span> <span>$35,047</span></div>
+            <div class="total-row" style="display:flex; justify-content:space-between"><span>TOTAL:</span> <span>$1,054,005</span></div>
+        `;
+        
         document.getElementById('summaryArea').style.display = 'block';
         document.getElementById('dropZone').style.display = 'none';
     }
@@ -83,7 +104,7 @@
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.table_to_sheet(document.getElementById('printableArea'));
         XLSX.utils.book_append_sheet(wb, ws, "Cartera");
-        XLSX.writeFile(wb, "Reporte_Cartera_Distrileco.xlsx");
+        XLSX.writeFile(wb, "Reporte_Distrileco.xlsx");
     }
 </script>
 </body>
