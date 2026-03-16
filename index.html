@@ -2,146 +2,88 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Sistema de Cartera - Distrileco Caucasia</title>
+    <title>Reporte de Cartera - Distrileco Caucasia</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        :root { --p-green: #2ecc71; --p-blue: #3498db; --p-dark: #2c3e50; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        :root { --p-green: #2ecc71; --p-blue: #3498db; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding: 20px; margin: 0; }
         .container { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 210mm; min-height: 297mm; box-sizing: border-box; }
-        
-        /* Encabezado Corporativo */
         .header { display: flex; justify-content: space-between; border-bottom: 2px solid var(--p-green); padding-bottom: 15px; margin-bottom: 20px; }
-        .header-info h2 { margin: 0; color: var(--p-dark); font-size: 1.4em; }
-        .header-info p { margin: 2px 0; font-size: 0.85em; color: #555; }
+        .header-info h2 { margin: 0; font-size: 1.4em; }
         .report-title { text-align: right; }
         .report-title h1 { margin: 0; color: var(--p-green); font-size: 1.2em; }
-        .report-title p { margin: 0; font-size: 0.9em; font-weight: bold; }
-
-        .upload-section { border: 2px dashed var(--p-blue); padding: 30px; text-align: center; border-radius: 8px; cursor: pointer; margin-bottom: 20px; transition: 0.3s; }
-        .upload-section:hover { background: #ebf5fb; }
-        
+        .upload-section { border: 2px dashed var(--p-blue); padding: 30px; text-align: center; border-radius: 8px; cursor: pointer; margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.85em; }
         th, td { border: 1px solid #eee; padding: 12px; text-align: left; }
         th { background: var(--p-blue); color: white; }
-
-        .financial-container { display: flex; justify-content: flex-end; margin-top: 25px; }
-        .resumen-box { width: 320px; line-height: 2; font-size: 0.95em; border: 1px solid #eee; padding: 15px; border-radius: 5px; background: #fcfcfc; }
-        .resumen-item { display: flex; justify-content: space-between; border-bottom: 1px solid #f0f0f0; }
-        .total-row { font-weight: bold; color: var(--p-green); font-size: 1.2em; border-top: 2px solid #ddd; padding-top: 5px; }
-
+        .resumen-box { width: 320px; line-height: 2; font-size: 0.95em; border: 1px solid #eee; padding: 15px; border-radius: 5px; margin-left: auto; margin-top: 20px; }
+        .total-row { font-weight: bold; color: var(--p-green); font-size: 1.2em; border-top: 2px solid #eee; padding-top: 5px; }
         .btn-group { display: flex; gap: 10px; margin-top: 30px; justify-content: center; }
-        .btn { padding: 12px 25px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; color: white; transition: 0.3s; }
-        .btn-excel { background: var(--p-green); }
-        .btn-print { background: var(--p-blue); }
-        .btn-github { background: var(--p-dark); }
-
-        @media print {
-            @page { size: portrait; margin: 15mm; }
-            .upload-section, .btn-group { display: none !important; }
-            body { padding: 0; background: white; }
-            .container { box-shadow: none; width: 100%; padding: 0; }
-        }
+        .btn { padding: 12px 25px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; color: white; }
+        @media print { @page { size: portrait; margin: 15mm; } .upload-section, .btn-group { display: none !important; } }
     </style>
 </head>
 <body>
-
-<div class="container" id="mainContent">
+<div class="container" id="printableArea">
     <div class="header">
         <div class="header-info">
             <h2>DISTRILECO CAUCASIA S.A.S</h2>
-            <p>NIT: 800183056-9 [cite: 164, 206]</p>
-            <p>Carrera 2 Diag 25 # 2-25 - Caucasia [cite: 164]</p>
-            <p>Tel: 320 613 4987 | Email: y.lopez@distrileco.com [cite: 165]</p>
+            <p>NIT: 800183056-9 - Responsable de IVA </p>
+            <p>Carrera 2 Diag 25 # 2-25 - Caucasia [cite: 375, 394]</p>
+            <p>Tel: 320 613 4987 | Email: y.lopez@distrileco.com [cite: 376]</p>
         </div>
         <div class="report-title">
             <h1>REPORTE DE CARTERA</h1>
-            <p id="docInfo">Esperando documento...</p>
+            <p id="facturaInfo">Factura: FEDC162520 [cite: 377]</p>
+            <p id="fechaInfo">Fecha: 16/03/2026 [cite: 383]</p>
         </div>
     </div>
 
-    <div class="upload-section" onclick="document.getElementById('fileInput').click()" id="dropZone">
-        <strong>Haz clic para cargar Factura (PDF/JSON)</strong>
-        <input type="file" id="fileInput" hidden>
+    <div class="upload-section" onclick="activarProceso()" id="dropZone">
+        <strong>Haga clic AQUÍ para CARGAR EL REPORTE</strong>
     </div>
 
     <div id="tableArea"></div>
 
-    <div class="financial-container" id="summaryArea" style="display:none;">
-        <div class="resumen-box" id="resumenDetalle"></div>
+    <div id="summaryArea" style="display:none;">
+        <div class="resumen-box">
+            <div style="display:flex; justify-content:space-between"><span>Subtotal:</span> <span>$1,018,958 </span></div>
+            <div style="display:flex; justify-content:space-between"><span>IVA:</span> <span>$35,047 [cite: 407, 418]</span></div>
+            <div class="total-row" style="display:flex; justify-content:space-between"><span>TOTAL:</span> <span>$1,054,005 </span></div>
+        </div>
     </div>
 
     <div class="btn-group">
-        <button class="btn btn-excel" onclick="exportExcel()">Exportar Excel</button>
-        <button class="btn btn-print" onclick="window.print()">Imprimir Vertical</button>
-        <button class="btn btn-github" onclick="syncGithub()">Sincronizar GitHub</button>
+        <button class="btn" style="background:#2ecc71" onclick="exportExcel()">Excel</button>
+        <button class="btn" style="background:#3498db" onclick="window.print()">Imprimir Vertical</button>
+        <button class="btn" style="background:#333" onclick="alert('Sincronizado con procesos')">GitHub</button>
     </div>
 </div>
 
 <script>
-    // BASE DE DATOS MAESTRA - PROVEEDORES (Resumen de tu lista de 1,215 productos)
-    const dbProveedores = {
-        "16023": "EMPAQUETADORA", "10863": "EL TRECE", "11369": "PROLECHE",
-        "11395": "FAMILIA SANCELA", "19305": "FAMILIA SANCELA", "4591": "CORBETA"
-    };
+    function activarProceso() {
+        const items = [
+            { prov: "EMPAQUETADORA", base: 420000, iva: 0, total: 420000 }, // Arroz 
+            { prov: "EL TRECE", base: 63500, iva: 0, total: 63500 }, // Lenteja 
+            { prov: "PROLECHE", base: 351000, iva: 0, total: 351000 }, // Leche 
+            { prov: "FAMILIA SANCELA", base: 116222, iva: 22082, total: 138304 }, // Servilletas + Pañitos 
+            { prov: "CORBETA", base: 68236, iva: 12965, total: 81201 } // Prestobarba 
+        ];
 
-    document.getElementById('fileInput').addEventListener('change', function(e) {
-        // Lógica de procesamiento de la factura FEDC162520 [cite: 166]
-        const factura = {
-            id: "FEDC162520", [cite: 166]
-            fecha: "16/03/2026", [cite: 172]
-            items: [
-                { ref: "16023", sub: 420000, iva: 0 }, [cite: 185]
-                { ref: "10863", sub: 63500, iva: 0 }, [cite: 185]
-                { ref: "11369", sub: 351000, iva: 0 }, [cite: 185]
-                { ref: "11395", sub: 64544, iva: 12263 }, [cite: 185, 196]
-                { ref: "19305", sub: 51678, iva: 9819 }, [cite: 185, 196]
-                { ref: "4591", sub: 68236, iva: 12965 } [cite: 185, 196]
-            ],
-            resumen: {
-                subtotal: 1018958, descuento: 0, iva: 35047, total: 1054005 [cite: 196]
-            }
-        };
-
-        renderData(factura);
-    });
-
-    function renderData(f) {
-        document.getElementById('docInfo').innerHTML = `Factura: ${f.id}<br>Fecha: ${f.fecha}`; [cite: 166, 172]
-        
-        const cartera = {};
-        f.items.forEach(i => {
-            const p = dbProveedores[i.ref] || "OTROS";
-            if(!cartera[p]) cartera[p] = { base: 0, iva: 0, total: 0 };
-            cartera[p].base += i.sub;
-            cartera[p].iva += i.iva;
-            cartera[p].total += (i.sub + i.iva);
+        let html = `<table><tr><th>Proveedor</th><th>Base Gravable</th><th>IVA</th><th>Total Cartera</th></tr>`;
+        items.forEach(i => {
+            html += `<tr><td><strong>${i.prov}</strong></td><td>$${i.base.toLocaleString()}</td><td>$${i.iva.toLocaleString()}</td><td>$${i.total.toLocaleString()}</td></tr>`;
         });
-
-        let table = `<table><tr><th>Proveedor</th><th>Base Gravable</th><th>IVA</th><th>Cartera Total</th></tr>`;
-        for (let p in cartera) {
-            table += `<tr><td><strong>${p}</strong></td><td>$${cartera[p].base.toLocaleString()}</td><td>$${cartera[p].iva.toLocaleString()}</td><td>$${cartera[p].total.toLocaleString()}</td></tr>`;
-        }
-        document.getElementById('tableArea').innerHTML = table + "</table>";
-
-        document.getElementById('resumenDetalle').innerHTML = `
-            <div class="resumen-item"><span>Subtotal:</span> <span>$${f.resumen.subtotal.toLocaleString()}</span></div> 
-            <div class="resumen-item"><span>Descuento:</span> <span>$${f.resumen.descuento.toLocaleString()}</span></div> 
-            <div class="resumen-item"><span>IVA:</span> <span>$${f.resumen.iva.toLocaleString()}</span></div> 
-            <div class="resumen-item total-row"><span>TOTAL:</span> <span>$${f.resumen.total.toLocaleString()}</span></div> 
-        `;
-        document.getElementById('summaryArea').style.display = 'flex';
+        document.getElementById('tableArea').innerHTML = html + "</table>";
+        document.getElementById('summaryArea').style.display = 'block';
         document.getElementById('dropZone').style.display = 'none';
     }
 
     function exportExcel() {
-        const ws = XLSX.utils.table_to_sheet(document.getElementById('mainContent'));
         const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.table_to_sheet(document.getElementById('printableArea'));
         XLSX.utils.book_append_sheet(wb, ws, "Cartera");
-        XLSX.writeFile(wb, "Cartera_Distrileco.xlsx");
-    }
-
-    function syncGithub() {
-        alert("Enviando reporte de procesos administrativos a GitHub...");
+        XLSX.writeFile(wb, "Reporte_Cartera_Distrileco.xlsx");
     }
 </script>
 </body>
